@@ -7,3 +7,6 @@
 {"payload":"Builder開始","topic":"plan.ready","ts":"2026-02-01T12:50:49.043055+00:00"}
 {"payload":"Builder should start with Task 1.1: Type definitions","topic":"plan.ready","ts":"2026-02-01T12:51:18.123744+00:00"}
 {"payload":"Builder should implement Task 1.1: Type definitions for v0.3 model","topic":"plan.ready","ts":"2026-02-01T12:51:45.471316+00:00"}
+{"payload":"Task 1.1 completed: Type definitions for v0.3 model created in src/data/model.ts. Build passes.","topic":"build.done","ts":"2026-02-01T12:53:31.287879+00:00"}
+{"payload":"Task 1.1 completed: Type definitions for v0.3 model created in src/data/model.ts. Build passes.","topic":"build.done","ts":"2026-02-01T12:54:08.508330+00:00"}
+{"payload":"Task 1.1 completed: Type definitions for v0.3 model created in src/data/model.ts. Build passes.","topic":"build.done","ts":"2026-02-01T12:54:37.547859+00:00"}

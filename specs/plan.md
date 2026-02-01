@@ -99,7 +99,7 @@ Integrate the v0.3 detailed model (baby_world_monthly_model.v0.3.detailed.json) 
 
 ## Phase 4: Evidence & Attribution (MVP - Critical for Ethical Use)
 
-### [ ] Task 4.1: Evidence badges UI component
+### [x] Task 4.1: Evidence badges UI component
 **File**: `src/components/Evidence/EvidenceBadge.tsx` (new)
 **Module**: `evidence.ui`
 **Description**: Create reusable component for showing evidence level
@@ -128,7 +128,7 @@ Integrate the v0.3 detailed model (baby_world_monthly_model.v0.3.detailed.json) 
 **Priority**: 1 (Critical)
 **Depends on**: Task 4.1
 
-### [ ] Task 4.4: Evidence disclaimer component
+### [x] Task 4.4: Evidence disclaimer component
 **File**: `src/components/Evidence/Disclaimer.tsx` (new)
 **Module**: `evidence.ui`
 **Description**: Create prominent disclaimer about simulation limitations

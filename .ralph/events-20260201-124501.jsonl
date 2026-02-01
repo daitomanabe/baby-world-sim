@@ -2,3 +2,5 @@
 {"payload":"Starting Baby World Sim MVP - v0.3 model integration","topic":"work.start","ts":"2026-02-01T12:46:35.909568+00:00"}
 {"payload":"Starting Baby World Sim MVP - v0.3 model integration","topic":"work.start","ts":"2026-02-01T12:47:05.905896+00:00"}
 {"payload":"Starting Baby World Sim MVP - v0.3 model integration","topic":"work.start","ts":"2026-02-01T12:47:44.230010+00:00"}
+{"payload":"Git verified, Planner should begin","topic":"git.ready","ts":"2026-02-01T12:48:46.388201+00:00"}
+{"payload":"Planner should begin creating specs/plan.md","topic":"git.ready","ts":"2026-02-01T12:49:21.738175+00:00"}

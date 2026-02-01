@@ -104,10 +104,26 @@ export interface MonthlyData {
   cognition: Cognition;
   language: Language;
   motor: Motor;
-  narrative: string;
-  tasksRecommended: string[];
+  narrative: Narrative;
+  tasksRecommended: TaskRecommendation[];
   renderParams: RenderParams;
   appFlags: AppFlags;
+  uncertainty: Uncertainty;
+  summary: string;
+}
+
+export interface Narrative {
+  sensory: string[];
+  action: string[];
+  language: string[];
+  concept: string[];
+  monthSpecific: string[];
+  caveats: string[];
+}
+
+export interface TaskRecommendation {
+  id: string;
+  why: string;
 }
 
 // ============================================================================
@@ -183,7 +199,7 @@ export interface VisionLevel {
   key: string;
   name: string;
   score: number;
-  changeFromPrevMonth: number | null;
+  changeFromPrevMonth: string | null;
   interpretation: string;
 }
 
@@ -222,7 +238,7 @@ export interface ConceptLayer {
   key: string;
   name: string;
   score: number;
-  changeFromPrevMonth: number | null;
+  changeFromPrevMonth: string | null;
   interpretation: string;
 }
 
@@ -231,16 +247,13 @@ export interface ConceptLayer {
 // ============================================================================
 
 export interface Language {
-  receptiveVocab: number;
-  productiveVocab: number;
+  receptive: number;
+  expressive: number;
+  vocabularyNorm: number;
   syntaxComplexity: number;
   pragmatics: number;
   stage: string;
   isInterpolated: boolean;
-  evidence: Array<{
-    sourceRef: string;
-    what: string;
-  }>;
 }
 
 // ============================================================================
@@ -248,14 +261,10 @@ export interface Language {
 // ============================================================================
 
 export interface Motor {
-  grossMotor: number;
-  fineMotor: number;
+  gross: number;
+  fine: number;
   stage: string;
   isInterpolated: boolean;
-  evidence: Array<{
-    sourceRef: string;
-    what: string;
-  }>;
 }
 
 // ============================================================================
@@ -288,9 +297,26 @@ export interface AudioRenderParams {
 // ============================================================================
 
 export interface AppFlags {
-  enableDepthRenderer: boolean;
-  enableEdgeOverlay: boolean;
+  enableDepthCues: boolean;
   enableSemanticLabels: boolean;
-  enableConceptGraph: boolean;
-  enableTaskRunner: boolean;
+  enableJointAttentionAgent: boolean;
+  enablePretendPlayScenarios: boolean;
+  enableTheoryOfMindTask: boolean;
+  enableTurnTakingDialogue: boolean;
+}
+
+// ============================================================================
+// Uncertainty (confidence levels)
+// ============================================================================
+
+export interface Uncertainty {
+  visionBasic: number;
+  visionSemantics: number;
+  hearing: number;
+  touchSmellTaste: number;
+  motor: number;
+  language: number;
+  cognition: number;
+  theoryOfMind: number;
+  notes: string[];
 }

@@ -9,3 +9,5 @@
 [2026-02-01T12:54:34Z] Ralph | done | Received build.done for Task 1.1, delegating to Reviewer
 [2026-02-01T12:55:42Z] Reviewer | done | Task 1.1 verified, build passes
 [2026-02-01T12:56:26Z] Ralph | delegating | Task 1.2 to Builder
+[2026-02-01T12:57:14Z] Ralph | delegating | Task 1.2 to Builder
+[2026-02-01T13:00:16Z] Builder | done | Task 1.2: Import and expose v0.3 JSON data

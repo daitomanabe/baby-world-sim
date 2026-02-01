@@ -20,7 +20,7 @@ Integrate the v0.3 detailed model (baby_world_monthly_model.v0.3.detailed.json) 
 - TaskLibrary
 **Priority**: 1 (Critical - foundation for all other work)
 
-### [ ] Task 1.2: Import and expose v0.3 JSON data
+### [x] Task 1.2: Import and expose v0.3 JSON data
 **File**: `src/data/index.ts`
 **Description**: Import baby_world_monthly_model.v0.3.detailed.json and export typed data
 - Import JSON with type assertion

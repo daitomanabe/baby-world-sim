@@ -4,3 +4,6 @@
 {"payload":"Starting Baby World Sim MVP - v0.3 model integration","topic":"work.start","ts":"2026-02-01T12:47:44.230010+00:00"}
 {"payload":"Git verified, Planner should begin","topic":"git.ready","ts":"2026-02-01T12:48:46.388201+00:00"}
 {"payload":"Planner should begin creating specs/plan.md","topic":"git.ready","ts":"2026-02-01T12:49:21.738175+00:00"}
+{"payload":"Builder開始","topic":"plan.ready","ts":"2026-02-01T12:50:49.043055+00:00"}
+{"payload":"Builder should start with Task 1.1: Type definitions","topic":"plan.ready","ts":"2026-02-01T12:51:18.123744+00:00"}
+{"payload":"Builder should implement Task 1.1: Type definitions for v0.3 model","topic":"plan.ready","ts":"2026-02-01T12:51:45.471316+00:00"}

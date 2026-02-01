@@ -1,0 +1,296 @@
+/**
+ * Type definitions for baby_world_monthly_model.v0.3.detailed.json
+ *
+ * This file defines the complete TypeScript interface for the v0.3 monthly model,
+ * including all sensory, cognitive, and rendering parameters.
+ */
+
+import type { EvidenceLevel } from "../types";
+
+// ============================================================================
+// Meta & Top-level
+// ============================================================================
+
+export interface ModelV3 {
+  meta: ModelMeta;
+  sources: Record<string, SourceDefinition>;
+  curves: CurveV3[];
+  milestones: MilestoneV3[];
+  taskLibrary: TaskDefinition[];
+  months: MonthlyData[];
+}
+
+export interface ModelMeta {
+  modelVersion: string;
+  generatedAt: string;
+  granularity: string;
+  monthsTotal: number;
+  disclaimer: string[];
+  howToUse: string[];
+}
+
+export interface SourceDefinition {
+  title: string;
+  url: string;
+  evidenceLevel: EvidenceLevel;
+  notes: string;
+}
+
+// ============================================================================
+// Curves (monthly progression data)
+// ============================================================================
+
+export interface CurveV3 {
+  key: string;
+  unit: string;
+  monthMin: number;
+  monthMax: number;
+  description: string;
+  points: CurvePoint[];
+  isInterpolated: boolean;
+  evidence: {
+    sourceRef: string;
+    notes: string;
+  };
+}
+
+export interface CurvePoint {
+  month: number;
+  value: number;
+}
+
+// ============================================================================
+// Milestones
+// ============================================================================
+
+export interface MilestoneV3 {
+  id: string;
+  monthStart: number;
+  monthEnd: number;
+  domain: string;
+  title: string;
+  summary: string;
+  sourceRef: string;
+  evidenceLevel: EvidenceLevel;
+  tags: string[];
+}
+
+// ============================================================================
+// Task Library
+// ============================================================================
+
+export interface TaskDefinition {
+  id: string;
+  domain: string;
+  title: string;
+  goal: string;
+  requiresModules: string[];
+  params: Record<string, any>;
+  evidence: Array<{
+    sourceRef: string;
+  }>;
+  notes: string;
+}
+
+// ============================================================================
+// Monthly Data (the core of the model)
+// ============================================================================
+
+export interface MonthlyData {
+  month: number;
+  ageLabel: string;
+  senses: Senses;
+  visionRepresentation: VisionRepresentation;
+  cognition: Cognition;
+  language: Language;
+  motor: Motor;
+  narrative: string;
+  tasksRecommended: string[];
+  renderParams: RenderParams;
+  appFlags: AppFlags;
+}
+
+// ============================================================================
+// Senses
+// ============================================================================
+
+export interface Senses {
+  vision: VisionSense;
+  hearing: HearingSense;
+  touch: TouchSense;
+  smell: SmellSense;
+  taste: TasteSense;
+}
+
+export interface VisionSense {
+  clarity: number;
+  color: number;
+  depth: number;
+  motion: number;
+  objects: number;
+  semantics: number;
+  stage: string;
+  isInterpolated: boolean;
+}
+
+export interface HearingSense {
+  localizationErrorDeg: number;
+  speechSalience: number;
+  stage: string;
+  isInterpolated: boolean;
+}
+
+export interface TouchSense {
+  mouthExploration: number;
+  handExploration: number;
+  toolUse: number;
+  stage: string;
+  isInterpolated: boolean;
+}
+
+export interface SmellSense {
+  discrimination: number;
+  stage: string;
+  isInterpolated: boolean;
+}
+
+export interface TasteSense {
+  saltSensitivity: number;
+  neophobia: number;
+  stage: string;
+  isInterpolated: boolean;
+}
+
+// ============================================================================
+// Vision Representation (6-level hierarchy)
+// ============================================================================
+
+export interface VisionRepresentation {
+  levels: VisionLevel[];
+  dimensionality: {
+    twoDWeight: number;
+    threeDWeight: number;
+  };
+  stage: string;
+  evidence: Array<{
+    sourceRef: string;
+    what: string;
+  }>;
+}
+
+export interface VisionLevel {
+  level: number;
+  key: string;
+  name: string;
+  score: number;
+  changeFromPrevMonth: number | null;
+  interpretation: string;
+}
+
+// ============================================================================
+// Cognition
+// ============================================================================
+
+export interface Cognition {
+  objectPermanence: number;
+  jointAttention: number;
+  pretendPlay: number;
+  causalReasoning: number;
+  theoryOfMind: number;
+  featureToMeaning: number;
+  attentionSelective: number;
+  attentionShift: number;
+  workingMemory: number;
+  inhibition: number;
+  imitation: number;
+  stage: string;
+  isInterpolated: boolean;
+  conceptRepresentation: ConceptRepresentation;
+}
+
+export interface ConceptRepresentation {
+  layers: ConceptLayer[];
+  stage: string;
+  evidence: Array<{
+    sourceRef: string;
+    what: string;
+  }>;
+}
+
+export interface ConceptLayer {
+  level: number;
+  key: string;
+  name: string;
+  score: number;
+  changeFromPrevMonth: number | null;
+  interpretation: string;
+}
+
+// ============================================================================
+// Language
+// ============================================================================
+
+export interface Language {
+  receptiveVocab: number;
+  productiveVocab: number;
+  syntaxComplexity: number;
+  pragmatics: number;
+  stage: string;
+  isInterpolated: boolean;
+  evidence: Array<{
+    sourceRef: string;
+    what: string;
+  }>;
+}
+
+// ============================================================================
+// Motor
+// ============================================================================
+
+export interface Motor {
+  grossMotor: number;
+  fineMotor: number;
+  stage: string;
+  isInterpolated: boolean;
+  evidence: Array<{
+    sourceRef: string;
+    what: string;
+  }>;
+}
+
+// ============================================================================
+// Render Parameters (for visual/audio simulation)
+// ============================================================================
+
+export interface RenderParams {
+  visual: VisualRenderParams;
+  audio: AudioRenderParams;
+  notes: string[];
+}
+
+export interface VisualRenderParams {
+  blurPx: number;
+  vignetteStrength: number;
+  saturation: number;
+  contrast: number;
+  depthCueStrength: number;
+  motionSensitivity: number;
+  semanticLabelAlpha: number;
+}
+
+export interface AudioRenderParams {
+  panningJitter: number;
+  speechInNoiseSuggestedSNRdB: number;
+}
+
+// ============================================================================
+// App Flags (feature toggles)
+// ============================================================================
+
+export interface AppFlags {
+  enableDepthRenderer: boolean;
+  enableEdgeOverlay: boolean;
+  enableSemanticLabels: boolean;
+  enableConceptGraph: boolean;
+  enableTaskRunner: boolean;
+}

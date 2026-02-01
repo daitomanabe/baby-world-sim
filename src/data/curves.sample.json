@@ -1,0 +1,118 @@
+[
+  {
+    "key": "vision.clarity",
+    "description": "見えの“クリアさ”の近似（0..1）。週ごとの滑らかな変化は補間モデル。",
+    "weekMin": 0,
+    "weekMax": 208,
+    "unit": "0..1",
+    "points": [
+      {
+        "week": 0,
+        "value": 0.15
+      },
+      {
+        "week": 8,
+        "value": 0.25
+      },
+      {
+        "week": 26,
+        "value": 0.45
+      },
+      {
+        "week": 52,
+        "value": 0.7
+      },
+      {
+        "week": 104,
+        "value": 0.85
+      },
+      {
+        "week": 208,
+        "value": 0.95
+      }
+    ],
+    "isInterpolated": true,
+    "evidence": {
+      "sourceTitle": "（要）視覚発達の概説 + モデル仮定",
+      "sourceUrl": "https://www.nationwidechildrens.org/family-resources-education/health-wellness-and-safety-resources/helping-hands/infant-vision-birth-to-one-year",
+      "evidenceLevel": "hospital_handout",
+      "notes": "数値は便宜的な正規化。厳密な視力値ではない。"
+    }
+  },
+  {
+    "key": "hearing.localizationErrorDeg",
+    "description": "音源定位の誤差（度）モデル（低いほど正確）。",
+    "weekMin": 0,
+    "weekMax": 208,
+    "unit": "deg",
+    "points": [
+      {
+        "week": 0,
+        "value": 80
+      },
+      {
+        "week": 16,
+        "value": 55
+      },
+      {
+        "week": 52,
+        "value": 25
+      },
+      {
+        "week": 104,
+        "value": 15
+      },
+      {
+        "week": 208,
+        "value": 8
+      }
+    ],
+    "isInterpolated": true,
+    "evidence": {
+      "sourceTitle": "（要）聴覚/言語マイルストーン + モデル仮定",
+      "sourceUrl": "https://www.stanfordchildrens.org/en/topic/default?id=age-appropriate-hearing-speech-and-language-milestones-90-P02169",
+      "evidenceLevel": "hospital_handout",
+      "notes": "定位誤差は概念モデル。聴力の有無を表すものではない。"
+    }
+  },
+  {
+    "key": "language.vocabularyEstimate",
+    "description": "語彙（推定）0..1（正規化）。節目（マイルストーン）とは別扱い。",
+    "weekMin": 0,
+    "weekMax": 208,
+    "unit": "0..1",
+    "points": [
+      {
+        "week": 52,
+        "value": 0.05
+      },
+      {
+        "week": 78,
+        "value": 0.12
+      },
+      {
+        "week": 104,
+        "value": 0.25
+      },
+      {
+        "week": 130,
+        "value": 0.38
+      },
+      {
+        "week": 156,
+        "value": 0.55
+      },
+      {
+        "week": 208,
+        "value": 0.75
+      }
+    ],
+    "isInterpolated": true,
+    "evidence": {
+      "sourceTitle": "CDC milestones（節目） + 推定曲線（仮）",
+      "sourceUrl": "https://www.cdc.gov/act-early/milestones/30-months.html",
+      "evidenceLevel": "public_guideline",
+      "notes": "数値は仮の正規化。今後データで改善する。"
+    }
+  }
+]

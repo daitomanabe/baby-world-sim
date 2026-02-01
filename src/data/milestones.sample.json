@@ -1,0 +1,27 @@
+[
+  {
+    "id": "cdc-30m-50words",
+    "weekStart": 130,
+    "weekEnd": 130,
+    "domain": "language",
+    "title": "（例）30ヶ月：およそ50語を話す",
+    "summary": "代表的なマイルストーン例。週単位は便宜的に30ヶ月（約130週）へマッピング。",
+    "details": "UIでは“節目”として表示し、週刻みの連続変化とは区別する。",
+    "sourceTitle": "CDC Act Early: 30 Months Milestones",
+    "sourceUrl": "https://www.cdc.gov/act-early/milestones/30-months.html",
+    "evidenceLevel": "public_guideline",
+    "notes": "個人差が大きい。医療評価用途ではない。"
+  },
+  {
+    "id": "hospital-vision-birth-1y",
+    "weekStart": 0,
+    "weekEnd": 52,
+    "domain": "vision",
+    "title": "（例）視覚：出生〜1歳の発達（要約）",
+    "summary": "出生直後は近距離中心、追視・両眼視の発達など（詳細は出典参照）。",
+    "sourceTitle": "Nationwide Children's Hospital: Infant Vision: Birth to One Year",
+    "sourceUrl": "https://www.nationwidechildrens.org/family-resources-education/health-wellness-and-safety-resources/helping-hands/infant-vision-birth-to-one-year",
+    "evidenceLevel": "hospital_handout",
+    "notes": "本アプリの視覚フィルタは“近似”。断定表現は禁止。"
+  }
+]

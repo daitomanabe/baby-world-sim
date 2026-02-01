@@ -1,0 +1,14 @@
+name: AI PR (placeholder)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ai_pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: |
+          echo "This workflow is a placeholder."
+          echo "Design in docs/AI_WORKFLOW.md"
+          echo "TODO: create context artifact -> call LLM -> apply patch -> open PR"

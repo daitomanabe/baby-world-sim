@@ -1,126 +1,99 @@
-# Task: Baby World Sim MVP開発
+# Task: Baby World Sim MVP - v0.3モデル統合
 
 ## Overview
 
-胎児〜4歳（0〜208週）の感覚発達シミュレーターのMVP実装。
-週単位のタイムラインで視覚・聴覚・言語発達を可視化するWebアプリ。
+`baby_world_monthly_model.v0.3.detailed.json` を使って、胎児〜4歳（0〜48ヶ月）の感覚発達シミュレーターを実装。
 
-## ⚠️ CRITICAL: 毎iteration必須事項
+## データモデル概要
 
-**全てのHatは作業完了後、イベント発行前に必ず実行:**
+```
+baby_world_monthly_model.v0.3.detailed.json
+├── meta: バージョン情報、disclaimer
+├── sources: 出典情報（CDC, NIDCD等）
+├── curves[32]: 発達曲線（vision.clarity, hearing.localization等）
+├── milestones[8]: マイルストーン
+├── months[49]: 0〜48ヶ月の詳細データ
+│   ├── senses: {vision, hearing, touch, smell, taste}
+│   ├── visionRepresentation: 6レベルの視覚表現
+│   ├── cognition: 概念表現
+│   ├── language: 語彙・文法
+│   ├── renderParams: {visual, audio} レンダリング用パラメータ
+│   └── tasksRecommended: 推奨タスク
+├── taskLibrary: タスク定義
+└── requiredAppFeatures: 実装すべきモジュール
+```
 
-1. `.agent/iteration.log` に記録を追記
-   ```
-   [{ISO8601}] iteration #{n} | {Hat名} | {状態} | {概要}
-   ```
+## 実装すべきモジュール（requiredAppFeatures.modules）
 
-2. Git commit & push
-   ```bash
-   git add -A
-   git commit -m "[Ralph] {Hat名}: {完了内容}"
-   git push origin main
-   ```
-
-## ⚠️ LOOP_COMPLETE時の追加処理
-
-LOOP_COMPLETEを発行する前に:
-1. `COMPLETION_REPORT.md` を生成
-2. 最終 git push
+| ID | 説明 | 優先度 |
+|----|------|--------|
+| visual.filterPipeline | blur/contrast/saturation適用 | P1 |
+| audio.webAudio | 音源定位/雑音下音声 | P1 |
+| evidence.ui | 出典表示 | P1 |
+| visual.depthRenderer | 2D→3D切替 | P2 |
+| visual.edgeOverlay | エッジマップ | P2 |
+| concept.graphView | 概念グラフ | P3 |
+| task.engine | タスク実行 | P3 |
 
 ## 技術スタック
 
-- **フレームワーク**: React 18 + TypeScript
-- **ビルド**: Vite
-- **スタイル**: CSS (global.css)
-- **音声**: Web Audio API
-- **グラフ**: 検討中（Chart.js or Recharts）
+- React 18 + TypeScript
+- Vite
+- Canvas/WebGL (視覚フィルタ)
+- Web Audio API (聴覚)
 
-## MVP要件
+## MVP要件（Phase 1）
 
-### 1. タイムラインUI
-- [x] 週スライダー（0〜208週）- 基本実装済み
-- [ ] 月/年表示の切り替え
-- [ ] 現在週のマイルストーン表示
+### 1. データ統合
+- [ ] JSONをsrc/data/に配置
+- [ ] TypeScript型定義（src/data/model.ts）
+- [ ] データアクセス関数（getMonthData, interpolate）
 
-### 2. 視覚シミュレーション
-- [ ] 年齢に応じたぼかしフィルタ
-- [ ] 彩度・コントラスト調整
-- [ ] サンプルシーン画像
+### 2. 視覚シミュレーション（visual.filterPipeline）
+- [ ] months[n].renderParams.visual を読み込み
+- [ ] blurRadius, contrast, saturation, vignette 適用
+- [ ] 月スライダーと連動
 
-### 3. 聴覚シミュレーション
-- [ ] Web Audio APIでの音声合成
-- [ ] 定位誤差の年齢変化
-- [ ] 周波数感度の変化
+### 3. 聴覚シミュレーション（audio.webAudio）
+- [ ] months[n].renderParams.audio を読み込み
+- [ ] noiseMixRatio で雑音混合
+- [ ] localizationJitterDeg で定位誤差
 
-### 4. 言語・概念パネル
-- [ ] マイルストーンカード表示
-- [ ] 出典・根拠レベルの明示
-- [ ] 週ごとのフィルタリング
+### 4. 出典表示（evidence.ui）
+- [ ] sources のリンク表示
+- [ ] isInterpolated バッジ
+- [ ] disclaimer 表示
 
-### 5. 非再現感覚パネル
-- [ ] 触覚/嗅覚/味覚の説明テキスト
-- [ ] 発達曲線グラフ
+## ファイル構成
 
-## データ構造
-
-### milestones.sample.json
-```json
-{
-  "id": "string",
-  "week": "number (0-208)",
-  "domain": "vision | hearing | language | motor | ...",
-  "title": "string",
-  "description": "string",
-  "source": "string (URL)",
-  "sourceLevel": "official | medical | peer-reviewed | overview"
-}
+```
+src/
+├── data/
+│   ├── model.ts           # 型定義
+│   ├── baby-world-model.json  # JSONコピー
+│   └── index.ts           # エクスポート
+├── lib/
+│   ├── interp.ts          # 補間関数
+│   └── week.ts            # 週⇔月変換
+├── features/simulation/
+│   ├── VisualSimCanvas.tsx    # 視覚Canvas
+│   ├── AudioSimPanel.tsx      # 聴覚パネル
+│   └── EvidenceBadge.tsx      # 出典バッジ
+└── components/
+    └── Timeline/
+        └── TimelineSlider.tsx # 月スライダー
 ```
 
-### curves.sample.json
-```json
-{
-  "id": "string",
-  "domain": "string",
-  "points": [{ "week": "number", "value": "number" }]
-}
-```
+## 毎iteration必須
 
-## Hat Roles
-
-### Git Setup
-- Git/GitHub初期化、既存リポジトリの確認
-- 完了後: ログ記録 → git push → git.ready
-
-### Planner
-- PROMPT.mdとdocs/を読み、タスクを分解
-- specs/plan.md にタスク一覧を出力
-- 完了後: ログ記録 → git push → plan.ready
-
-### Builder
-- React/TypeScriptでフロントエンド実装
-- 既存コードスタイルに従う
-- 完了後: ログ記録 → git push → build.done
-
-### Reviewer
-- コードレビュー、ビルド確認
-- 問題あり → review.changes_requested
-- 全完了 → COMPLETION_REPORT.md生成 → LOOP_COMPLETE
+1. `.agent/iteration.log` に追記
+2. `git add -A && git commit && git push`
+3. `ralph emit "{event}" "{message}"`
 
 ## Success Criteria
 
-- [ ] npm run build が成功する
-- [ ] 週スライダーで0〜208週を操作できる
-- [ ] 少なくとも1つのシミュレーションパネルが動作する
-- [ ] マイルストーンが週に応じて表示される
-- [ ] 全変更がremoteにpush済み
-- [ ] .agent/iteration.log が最新
-- [ ] COMPLETION_REPORT.md が生成済み
-- [ ] LOOP_COMPLETE
-
-## 参考ドキュメント
-
-- `docs/OVERVIEW.md` - 企画概要
-- `docs/TECHNICAL_DESIGN.md` - 技術設計書
-- `docs/ROADMAP.md` - 実装ロードマップ
-- `docs/RESEARCH_INITIAL.md` - 初期リサーチ（0〜48ヶ月）
-- `docs/REFERENCES.md` - 参考文献一覧
+- [ ] npm run build 成功
+- [ ] 月スライダーで0〜48ヶ月を操作
+- [ ] 視覚フィルタがrenderParams.visualで変化
+- [ ] 出典が表示される
+- [ ] COMPLETION_REPORT.md 生成

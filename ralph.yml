@@ -3,7 +3,7 @@ cli:
 
 event_loop:
   completion_promise: "LOOP_COMPLETE"
-  max_iterations: 50
+  max_iterations: 30
   prompt_file: "PROMPT.md"
   starting_event: "work.start"
   checkpoint_interval: 1
@@ -16,32 +16,15 @@ hats:
   git_setup:
     name: "Git Setup"
     description: |
-      ⚠️ あなたは「Git Setup」hatです。Ralphオーケストレーターではありません。
-      ⚠️ 「私はRalph」「オーケストレーター」と言わないでください。
-      ⚠️ 他のhatへの委譲は不要。自分で全て実行してください。
-
-      ## 私がやること（Git Setup）
+      ⚠️ あなたは「Git Setup」です。他に委譲せず自分で実行。
 
       ```bash
-      # 1. 認証確認
       gh auth status
-      # 失敗したら → ralph emit "LOOP_COMPLETE" "GitHub auth failed"
-
-      # 2. git状態確認
-      git status
       git pull origin main
-
-      # 3. iteration.log に追記
-      echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] iteration #N | Git Setup | done | Git verified" >> .agent/iteration.log
-
-      # 4. コミット＆プッシュ
+      echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Git Setup | done | verified" >> .agent/iteration.log
       git add -A && git commit -m "[Ralph] Git Setup: verified" && git push origin main
-
-      # 5. 次のhatへイベント発行
-      ralph emit "git.ready" "Git setup complete, Planner can start"
+      ralph emit "git.ready" "Planner開始"
       ```
-
-      上記を実行したら終了。
     triggers:
       - "work.start"
     publishes:
@@ -51,33 +34,26 @@ hats:
   planner:
     name: "Planner"
     description: |
-      ⚠️ あなたは「Planner」hatです。Ralphオーケストレーターではありません。
-      ⚠️ 他のhatへの委譲は不要。自分で全て実行してください。
+      ⚠️ あなたは「Planner」です。他に委譲せず自分で実行。
 
-      ## 私がやること（Planner）
+      baby_world_monthly_model.v0.3.detailed.json の requiredAppFeatures.modules を参照し、
+      MVPで必要なタスクを specs/plan.md に出力。
 
-      1. PROMPT.md を読んでMVP要件を把握
-      2. docs/ 配下のドキュメントを確認
-      3. src/ の現在の実装状況を確認
-      4. specs/plan.md にタスク一覧を作成:
-         ```markdown
-         # Implementation Plan
+      優先順位:
+      1. データ統合（JSONをsrc/dataに配置、型定義）
+      2. visual.filterPipeline（視覚フィルタ）
+      3. audio.webAudio（聴覚シミュレーション）
+      4. evidence.ui（出典表示）
 
-         ## Phase 1: Data
-         - [ ] T1: milestones.sample.json にデータ追加
-         - [ ] T2: curves.sample.json にデータ追加
-
-         ## Phase 2: UI
-         - [ ] T3: TimelineSlider改善
-         - [ ] T4: VisualSimCanvas実装
-         ...
-         ```
-
-      5. .agent/iteration.log に追記
-      6. git add -A && git commit -m "[Ralph] Planner: タスク分解完了" && git push
-      7. ralph emit "plan.ready" "Plan created, Builder can start"
-
-      上記を実行したら終了。
+      ```bash
+      # 1. plan.md作成（実際にファイルを書く）
+      # 2. ログ記録
+      echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Planner | done | plan created" >> .agent/iteration.log
+      # 3. git push
+      git add -A && git commit -m "[Ralph] Planner: plan created" && git push
+      # 4. イベント発行
+      ralph emit "plan.ready" "Builder開始"
+      ```
     triggers:
       - "git.ready"
     publishes:
@@ -86,22 +62,28 @@ hats:
   builder:
     name: "Builder"
     description: |
-      ⚠️ あなたは「Builder」hatです。Ralphオーケストレーターではありません。
-      ⚠️ 他のhatへの委譲は不要。自分でコードを書いてください。
+      ⚠️ あなたは「Builder」です。他に委譲せず、コードを書いてください。
 
-      ## 私がやること（Builder）
+      specs/plan.md から未完了タスク（[ ]）を1つ選び、実装する。
 
-      1. specs/plan.md から未完了タスク（[ ]）を1つ選ぶ
-      2. そのタスクを実装する（実際にコードを書く！）
-         - 例: src/data/milestones.sample.json を編集
-         - 例: src/features/simulation/VisualSimCanvas.tsx を実装
-      3. npm run build でビルド確認
-      4. specs/plan.md のタスクを [x] に更新
-      5. .agent/iteration.log に追記
-      6. git add -A && git commit -m "[Ralph] Builder: {タスク名}" && git push
-      7. ralph emit "build.done" "Built {タスク名}, ready for review"
+      主要タスク例:
+      - src/data/model.ts: baby_world_monthly_model.v0.3.detailed.json の型定義
+      - src/data/index.ts: JSONのインポートと提供
+      - src/lib/interp.ts: 月次データの補間関数
+      - src/features/simulation/VisualSimCanvas.tsx: renderParams.visual を使ったフィルタ
+      - src/features/simulation/AudioSimPanel.tsx: renderParams.audio を使った音声
 
-      重要: 実際にWriteやEditツールを使ってコードを書く！
+      ```bash
+      # 1. コードを実装（Write/Editツール使用）
+      # 2. npm run build
+      # 3. plan.mdの該当タスクを [x] に
+      # 4. ログ記録
+      echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Builder | done | {タスク}" >> .agent/iteration.log
+      # 5. git push
+      git add -A && git commit -m "[Ralph] Builder: {タスク}" && git push
+      # 6. イベント発行
+      ralph emit "build.done" "Reviewer依頼"
+      ```
     triggers:
       - "plan.ready"
       - "review.changes_requested"
@@ -111,27 +93,26 @@ hats:
   reviewer:
     name: "Reviewer"
     description: |
-      ⚠️ あなたは「Reviewer」hatです。Ralphオーケストレーターではありません。
-      ⚠️ 他のhatへの委譲は不要。自分でレビューしてください。
+      ⚠️ あなたは「Reviewer」です。他に委譲せず、レビューしてください。
 
-      ## 私がやること（Reviewer）
+      ```bash
+      # 1. 変更確認
+      git diff HEAD~1
+      # 2. ビルド確認
+      npm run build
+      # 3. specs/plan.md で残タスク確認
+      ```
 
-      1. git diff HEAD~1 で変更内容を確認
-      2. npm run build でビルド確認
-      3. コード品質をチェック（型エラー、スタイル）
-      4. specs/plan.md で残タスクを確認
+      判断:
+      - 問題あり → ralph emit "review.changes_requested" "{修正内容}"
+      - 残タスクあり → ralph emit "plan.ready" "次タスク"
+      - 全完了 → COMPLETION_REPORT.md生成後 ralph emit "LOOP_COMPLETE" "完了"
 
-      ## 判断
-      - 問題あり → ralph emit "review.changes_requested" "修正必要: {内容}"
-      - 残タスクあり → ralph emit "plan.ready" "次のタスクへ"
-      - 全タスク完了:
-        1. COMPLETION_REPORT.md を生成
-        2. git add -A && git commit && git push
-        3. ralph emit "LOOP_COMPLETE" "All tasks completed"
-
-      5. .agent/iteration.log に追記
-      6. git add -A && git commit -m "[Ralph] Reviewer: {結果}" && git push
-      7. イベント発行（上記の判断に基づき1つだけ）
+      ```bash
+      echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Reviewer | done | {結果}" >> .agent/iteration.log
+      git add -A && git commit -m "[Ralph] Reviewer: {結果}" && git push
+      ralph emit "{イベント}" "{メッセージ}"
+      ```
     triggers:
       - "build.done"
     publishes:

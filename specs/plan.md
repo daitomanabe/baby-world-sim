@@ -30,7 +30,7 @@ Integrate the v0.3 detailed model (baby_world_monthly_model.v0.3.detailed.json) 
 **Priority**: 1 (Critical - required for all features)
 **Depends on**: Task 1.1
 
-### [ ] Task 1.3: Monthly data interpolation utilities
+### [x] Task 1.3: Monthly data interpolation utilities
 **File**: `src/lib/interp.ts`
 **Description**: Update interpolation functions to handle v0.3 monthly data (months 0..48)
 - Add support for visual renderParams (blur, contrast, saturation, vignette, etc.)

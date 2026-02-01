@@ -1,0 +1,106 @@
+cli:
+  backend: "claude"
+
+event_loop:
+  completion_promise: "LOOP_COMPLETE"
+  max_iterations: 50
+  prompt_file: "PROMPT.md"
+  starting_event: "work.start"
+  checkpoint_interval: 1
+
+core:
+  scratchpad: ".agent/scratchpad.md"
+  specs_dir: "./specs/"
+
+hats:
+  git_setup:
+    name: "Git Setup"
+    description: |
+      Git/GitHub初期化。失敗したら即LOOP_COMPLETE。
+
+      実行手順:
+      1. gh auth status (認証確認、失敗→LOOP_COMPLETE)
+      2. git status (既存リポジトリ確認)
+      3. 既存リポジトリがあれば git pull origin main
+      4. .agent/iteration.log に記録
+      5. git add -A && git commit -m "[Ralph] Git setup verified" && git push
+
+      全て成功 → git.ready / いずれか失敗 → LOOP_COMPLETE
+    triggers:
+      - "work.start"
+    publishes:
+      - "git.ready"
+      - "LOOP_COMPLETE"
+
+  planner:
+    name: "Planner"
+    description: |
+      タスク分解・優先度設定。
+
+      実行手順:
+      1. PROMPT.md の要件を読み込む
+      2. docs/ 配下のドキュメントを確認
+      3. 現在のsrc/の実装状況を把握
+      4. specs/plan.md にタスク一覧を出力
+      5. .agent/scratchpad.md に進捗管理用メモを記載
+
+      完了後:
+      1. .agent/iteration.log に記録
+      2. git add -A && git commit -m "[Ralph] Planner: タスク分解完了" && git push
+    triggers:
+      - "git.ready"
+    publishes:
+      - "plan.ready"
+
+  builder:
+    name: "Builder"
+    description: |
+      実装担当。React/TypeScript/Viteでフロントエンド開発。
+
+      実行手順:
+      1. specs/plan.md から次のタスクを取得
+      2. 該当ファイルを実装/修正
+      3. npm run build でビルド確認
+      4. .agent/scratchpad.md を更新
+
+      完了後:
+      1. .agent/iteration.log に記録
+      2. git add -A && git commit -m "[Ralph] Builder: {実装内容}" && git push
+
+      注意:
+      - 既存のコードスタイルに従う
+      - 型安全性を維持
+      - コンポーネントは小さく保つ
+    triggers:
+      - "plan.ready"
+      - "review.changes_requested"
+    publishes:
+      - "build.done"
+
+  reviewer:
+    name: "Reviewer"
+    description: |
+      コードレビュー・品質確認。
+
+      実行手順:
+      1. 変更されたファイルを確認
+      2. TypeScriptの型エラーがないか確認 (npm run build)
+      3. コードスタイル・可読性をチェック
+      4. 問題があれば review.changes_requested を発行
+      5. 問題なければ次のタスクがあるか確認
+         - 残タスクあり → plan.ready を発行
+         - 全タスク完了 → LOOP_COMPLETE を発行
+
+      完了後:
+      1. .agent/iteration.log に記録
+      2. git add -A && git commit -m "[Ralph] Reviewer: {レビュー結果}" && git push
+
+      LOOP_COMPLETE発行時は追加で:
+      3. COMPLETION_REPORT.md を生成
+      4. 最終 git push
+    triggers:
+      - "build.done"
+    publishes:
+      - "review.changes_requested"
+      - "plan.ready"
+      - "LOOP_COMPLETE"

@@ -22,3 +22,6 @@ pnpm-debug.log*
 Thumbs.db
 .idea
 .vscode
+
+# Ralph (keep tracked files, ignore temp)
+# .agent/ and specs/ are tracked

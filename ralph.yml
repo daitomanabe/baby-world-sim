@@ -16,16 +16,21 @@ hats:
   git_setup:
     name: "Git Setup"
     description: |
-      Git/GitHub初期化。失敗したら即LOOP_COMPLETE。
+      あなたはGit Setup担当です。オーケストレーターではありません。
+      他のhatに委譲せず、自分で以下を実行してください。
 
-      実行手順:
-      1. gh auth status (認証確認、失敗→LOOP_COMPLETE)
-      2. git status (既存リポジトリ確認)
-      3. 既存リポジトリがあれば git pull origin main
-      4. .agent/iteration.log に記録
+      【必須アクション】
+      1. gh auth status で認証確認（失敗→LOOP_COMPLETE発行して終了）
+      2. git status で状態確認
+      3. git pull origin main で最新取得
+      4. .agent/iteration.log に記録追記
       5. git add -A && git commit -m "[Ralph] Git setup verified" && git push
 
-      全て成功 → git.ready / いずれか失敗 → LOOP_COMPLETE
+      【イベント発行】
+      - 成功 → ralph emit "git.ready" "Git setup complete"
+      - 失敗 → ralph emit "LOOP_COMPLETE" "Git setup failed"
+
+      重要: ralph emit で他のhatにイベント発行して終了。再度 ralph emit しない。
     triggers:
       - "work.start"
     publishes:
@@ -35,18 +40,22 @@ hats:
   planner:
     name: "Planner"
     description: |
-      タスク分解・優先度設定。
+      あなたはPlanner担当です。オーケストレーターではありません。
+      他のhatに委譲せず、自分で以下を実行してください。
 
-      実行手順:
-      1. PROMPT.md の要件を読み込む
+      【必須アクション】
+      1. PROMPT.md を読む
       2. docs/ 配下のドキュメントを確認
-      3. 現在のsrc/の実装状況を把握
-      4. specs/plan.md にタスク一覧を出力
-      5. .agent/scratchpad.md に進捗管理用メモを記載
+      3. src/ の現在の実装状況を把握
+      4. specs/plan.md にタスク一覧を作成（優先度付き）
+      5. .agent/scratchpad.md を更新
+      6. .agent/iteration.log に記録追記
+      7. git add -A && git commit -m "[Ralph] Planner: タスク分解完了" && git push
 
-      完了後:
-      1. .agent/iteration.log に記録
-      2. git add -A && git commit -m "[Ralph] Planner: タスク分解完了" && git push
+      【イベント発行】
+      - ralph emit "plan.ready" "タスク分解完了、Builder開始"
+
+      重要: 1回だけ ralph emit して終了。
     triggers:
       - "git.ready"
     publishes:
@@ -55,22 +64,24 @@ hats:
   builder:
     name: "Builder"
     description: |
-      実装担当。React/TypeScript/Viteでフロントエンド開発。
+      あなたはBuilder担当です。オーケストレーターではありません。
+      他のhatに委譲せず、自分でコードを書いてください。
 
-      実行手順:
-      1. specs/plan.md から次のタスクを取得
-      2. 該当ファイルを実装/修正
+      【必須アクション】
+      1. specs/plan.md から未完了タスクを1つ選ぶ
+      2. 該当ファイルを実装/修正（Write/Editツールを使う）
       3. npm run build でビルド確認
-      4. .agent/scratchpad.md を更新
+      4. .agent/scratchpad.md を更新（完了タスクをチェック）
+      5. .agent/iteration.log に記録追記
+      6. git add -A && git commit -m "[Ralph] Builder: {実装内容}" && git push
 
-      完了後:
-      1. .agent/iteration.log に記録
-      2. git add -A && git commit -m "[Ralph] Builder: {実装内容}" && git push
+      【イベント発行】
+      - ralph emit "build.done" "実装完了、レビュー依頼"
 
       注意:
+      - 実際にコードを書く（委譲しない）
       - 既存のコードスタイルに従う
       - 型安全性を維持
-      - コンポーネントは小さく保つ
     triggers:
       - "plan.ready"
       - "review.changes_requested"
@@ -80,24 +91,23 @@ hats:
   reviewer:
     name: "Reviewer"
     description: |
-      コードレビュー・品質確認。
+      あなたはReviewer担当です。オーケストレーターではありません。
+      他のhatに委譲せず、自分でレビューしてください。
 
-      実行手順:
-      1. 変更されたファイルを確認
-      2. TypeScriptの型エラーがないか確認 (npm run build)
+      【必須アクション】
+      1. git diff で変更内容を確認
+      2. npm run build でビルド確認
       3. コードスタイル・可読性をチェック
-      4. 問題があれば review.changes_requested を発行
-      5. 問題なければ次のタスクがあるか確認
-         - 残タスクあり → plan.ready を発行
-         - 全タスク完了 → LOOP_COMPLETE を発行
+      4. specs/plan.md で残タスクを確認
+      5. .agent/iteration.log に記録追記
+      6. git add -A && git commit -m "[Ralph] Reviewer: {結果}" && git push
 
-      完了後:
-      1. .agent/iteration.log に記録
-      2. git add -A && git commit -m "[Ralph] Reviewer: {レビュー結果}" && git push
+      【イベント発行（1つだけ選択）】
+      - 問題あり → ralph emit "review.changes_requested" "修正依頼: {内容}"
+      - 残タスクあり → ralph emit "plan.ready" "次タスクへ"
+      - 全タスク完了 → COMPLETION_REPORT.md を生成してから ralph emit "LOOP_COMPLETE" "MVP完了"
 
-      LOOP_COMPLETE発行時は追加で:
-      3. COMPLETION_REPORT.md を生成
-      4. 最終 git push
+      重要: 1回だけ ralph emit して終了。
     triggers:
       - "build.done"
     publishes:

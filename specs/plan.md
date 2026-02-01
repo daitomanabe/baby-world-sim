@@ -42,7 +42,7 @@ Integrate the v0.3 detailed model (baby_world_monthly_model.v0.3.detailed.json) 
 
 ## Phase 2: Visual Simulation (MVP)
 
-### [ ] Task 2.1: Visual filter pipeline - basic implementation
+### [x] Task 2.1: Visual filter pipeline - basic implementation
 **File**: `src/features/simulation/VisualSimCanvas.tsx`
 **Module**: `visual.filterPipeline`
 **Description**: Apply visual filters from renderParams.visual

@@ -4,11 +4,15 @@ import VisualSimCanvas from "./features/simulation/VisualSimCanvas";
 import AudioSimPanel from "./features/simulation/AudioSimPanel";
 import NonReproducibleSensesPanel from "./features/simulation/NonReproducibleSensesPanel";
 import LanguageConceptPanel from "./features/simulation/LanguageConceptPanel";
+import { Disclaimer } from "./components/Evidence";
+import { MODEL_META } from "./data";
 
 export default function App() {
   const [week, setWeek] = useState(0);
 
-  const monthApprox = useMemo(() => Math.round((week / 4.345) * 10) / 10, [week]);
+  // Convert week to month for v0.3 model (0-208 weeks → 0-48 months)
+  const month = useMemo(() => week / 4.345, [week]);
+  const monthDisplay = useMemo(() => Math.round(month * 10) / 10, [month]);
 
   return (
     <div className="container">
@@ -16,6 +20,13 @@ export default function App() {
       <div className="small" style={{ marginTop: 6 }}>
         0〜4歳（0〜48ヶ月 / 0〜208週）を週単位で可視化する近似シミュレーター（教育・研究用途）
       </div>
+      <div className="small" style={{ marginTop: 4, color: "#666" }}>
+        Model v{MODEL_META?.modelVersion || "0.3"} | {MODEL_META?.granularity || "month"}
+      </div>
+
+      <Disclaimer
+        disclaimerText={MODEL_META?.disclaimer}
+      />
 
       <div style={{ marginTop: 16 }}>
         <TimelineSlider week={week} onChange={setWeek} />
@@ -23,7 +34,8 @@ export default function App() {
 
       <div className="row" style={{ marginTop: 16 }}>
         <div style={{ display: "grid", gap: 16 }}>
-          <VisualSimCanvas week={week} />
+          {/* Pass month instead of week to use v0.3 model */}
+          <VisualSimCanvas month={month} />
           <AudioSimPanel week={week} />
         </div>
         <div style={{ display: "grid", gap: 16 }}>
@@ -32,17 +44,13 @@ export default function App() {
           <div className="card">
             <div style={{ fontSize: 14, fontWeight: 700 }}>状態</div>
             <div className="small" style={{ marginTop: 8 }}>
-              week={week} / month≈{monthApprox}
+              week={week} / month≈{monthDisplay}
             </div>
             <div className="small" style={{ marginTop: 8, opacity: 0.85 }}>
-              TODO: 運動（粗大/微細）パネル、出典カードの共通UI、個人差レンジなど。
+              TODO: 運動（粗大/微細）パネル、聴覚シミュレーション、出典カードの共通UI、個人差レンジなど。
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="small" style={{ marginTop: 20, opacity: 0.8 }}>
-        ⚠️ 本アプリは近似モデルです。医療・診断目的では使用しないでください。
       </div>
     </div>
   );

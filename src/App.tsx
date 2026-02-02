@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import TimelineSlider from "./components/Timeline/TimelineSlider";
 import VisualSimCanvas from "./features/simulation/VisualSimCanvas";
+import DepthPerceptionPanel from "./features/simulation/DepthPerceptionPanel";
 import ColorVisionPanel from "./features/simulation/ColorVisionPanel";
 import AudioSimPanel from "./features/simulation/AudioSimPanel";
 import NonReproducibleSensesPanel from "./features/simulation/NonReproducibleSensesPanel";
@@ -37,6 +38,7 @@ export default function App() {
         <div style={{ display: "grid", gap: 16 }}>
           {/* Pass month instead of week to use v0.3 model */}
           <VisualSimCanvas month={month} />
+          <DepthPerceptionPanel month={month} />
           <ColorVisionPanel month={month} />
           <AudioSimPanel week={week} />
         </div>

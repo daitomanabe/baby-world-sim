@@ -203,7 +203,7 @@ export default function ColorVisionPanel({ month }: Props) {
     </div>
   );
 
-  // Calculate perceived colors based on color vision model
+  // Calculate perceived colors based on improved color vision model
   const getPerceivedColor = (r: number, g: number, b: number): string => {
     const { lCone, mCone, sCone, redGreenChannel, blueYellowChannel, saturationSensitivity } =
       colorVision;
@@ -212,20 +212,31 @@ export default function ColorVisionPanel({ month }: Props) {
     const gn = g / 255;
     const bn = b / 255;
 
-    const lResponse = rn * lCone;
-    const mResponse = gn * mCone;
-    const sResponse = bn * sCone;
+    // Step 1: Cone absorption
+    const lAbsorbed = rn * lCone;
+    const mAbsorbed = gn * mCone;
+    const sAbsorbed = bn * sCone;
 
-    const luminance = 0.299 * rn + 0.587 * gn + 0.114 * bn;
+    // Step 2: Opponent channel processing
+    const achromatic = (lAbsorbed + mAbsorbed + sAbsorbed) / 3;
 
-    let outR = luminance + (lResponse - luminance) * redGreenChannel;
-    let outG = luminance + (mResponse - luminance) * redGreenChannel;
-    let outB = luminance + (sResponse - luminance) * blueYellowChannel;
+    // Red-green discrimination
+    const lProcessed = achromatic + (lAbsorbed - achromatic) * redGreenChannel;
+    const mProcessed = achromatic + (mAbsorbed - achromatic) * redGreenChannel;
 
-    const avgOut = (outR + outG + outB) / 3;
-    outR = avgOut + (outR - avgOut) * saturationSensitivity;
-    outG = avgOut + (outG - avgOut) * saturationSensitivity;
-    outB = avgOut + (outB - avgOut) * saturationSensitivity;
+    // Blue-yellow discrimination
+    const sProcessed = achromatic + (sAbsorbed - achromatic) * blueYellowChannel;
+
+    // Step 3: Output
+    let outR = lProcessed;
+    let outG = mProcessed;
+    let outB = sProcessed;
+
+    // Step 4: Saturation sensitivity
+    const avgProcessed = (outR + outG + outB) / 3;
+    outR = avgProcessed + (outR - avgProcessed) * saturationSensitivity;
+    outG = avgProcessed + (outG - avgProcessed) * saturationSensitivity;
+    outB = avgProcessed + (outB - avgProcessed) * saturationSensitivity;
 
     const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v * 255)));
     return `rgb(${clamp(outR)}, ${clamp(outG)}, ${clamp(outB)})`;

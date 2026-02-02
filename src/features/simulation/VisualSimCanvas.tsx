@@ -105,45 +105,63 @@ export default function VisualSimCanvas({ month, showDetails = true }: Props) {
       let gn = g / 255;
       let bn = b / 255;
 
-      // === Color Vision Model (Research-based) ===
-      // Simulate cone responses
-      const lResponse = rn * lCone;
-      const mResponse = gn * mCone;
-      const sResponse = bn * sCone;
+      // === Improved Color Vision Model (Research-based) ===
+      // Step 1: Cone absorption - what wavelengths are actually detected
+      // L-cones absorb red/yellow, M-cones green/yellow, S-cones blue
+      // Higher cone value = more wavelength detected
+      const lAbsorbed = rn * lCone;
+      const mAbsorbed = gn * mCone;
+      const sAbsorbed = bn * sCone;
 
-      // Calculate luminance
-      const luminance = 0.299 * rn + 0.587 * gn + 0.114 * bn;
+      // Step 2: Opponent channel processing
+      // This determines how well the infant can DISCRIMINATE colors
+      // Low channel = colors blend toward each other
 
-      // Apply opponent channel processing
-      // Red-green channel affects red/green discrimination
-      // Blue-yellow channel affects blue discrimination
-      rn = luminance + (lResponse - luminance) * redGreenChannel;
-      gn = luminance + (mResponse - luminance) * redGreenChannel;
-      bn = luminance + (sResponse - luminance) * blueYellowChannel;
+      // Calculate the mean cone response (achromatic signal)
+      const achromatic = (lAbsorbed + mAbsorbed + sAbsorbed) / 3;
 
-      // Apply saturation sensitivity (research: doesn't reach adult until adolescence)
-      const avgColor = (rn + gn + bn) / 3;
-      rn = avgColor + (rn - avgColor) * saturationSensitivity;
-      gn = avgColor + (gn - avgColor) * saturationSensitivity;
-      bn = avgColor + (bn - avgColor) * saturationSensitivity;
+      // Red-green discrimination: how well L vs M signals separate
+      // When redGreenChannel is low, red and green blend toward yellow/gray
+      // When high, red and green are clearly distinct
+      const lProcessed = achromatic + (lAbsorbed - achromatic) * redGreenChannel;
+      const mProcessed = achromatic + (mAbsorbed - achromatic) * redGreenChannel;
+
+      // Blue-yellow discrimination: how well S signal separates from L+M
+      // When blueYellowChannel is low, blue appears gray
+      // When high, blue is clearly distinct
+      const sProcessed = achromatic + (sAbsorbed - achromatic) * blueYellowChannel;
+
+      // Step 3: Convert back to RGB-like representation
+      // Preserve the relative strength of detected colors
+      let outR = lProcessed;
+      let outG = mProcessed;
+      let outB = sProcessed;
+
+      // Step 4: Apply saturation sensitivity
+      // This affects VIVIDNESS, not hue detection
+      // Even with low saturation, detected colors should show through
+      const avgProcessed = (outR + outG + outB) / 3;
+      outR = avgProcessed + (outR - avgProcessed) * saturationSensitivity;
+      outG = avgProcessed + (outG - avgProcessed) * saturationSensitivity;
+      outB = avgProcessed + (outB - avgProcessed) * saturationSensitivity;
 
       // === RenderParams Processing ===
       // Apply contrast from model
-      rn = (rn - 0.5) * contrastFactor + 0.5;
-      gn = (gn - 0.5) * contrastFactor + 0.5;
-      bn = (bn - 0.5) * contrastFactor + 0.5;
+      outR = (outR - 0.5) * contrastFactor + 0.5;
+      outG = (outG - 0.5) * contrastFactor + 0.5;
+      outB = (outB - 0.5) * contrastFactor + 0.5;
 
-      // Apply saturation from model (multiplicative with color vision saturation)
-      const gray = 0.299 * rn + 0.587 * gn + 0.114 * bn;
+      // Apply saturation from model (additional layer)
+      const gray = 0.299 * outR + 0.587 * outG + 0.114 * outB;
       const modelSat = visual.saturation;
-      rn = gray + modelSat * (rn - gray);
-      gn = gray + modelSat * (gn - gray);
-      bn = gray + modelSat * (bn - gray);
+      outR = gray + modelSat * (outR - gray);
+      outG = gray + modelSat * (outG - gray);
+      outB = gray + modelSat * (outB - gray);
 
       // Convert back to 0-255
-      data[i] = Math.max(0, Math.min(255, Math.round(rn * 255)));
-      data[i + 1] = Math.max(0, Math.min(255, Math.round(gn * 255)));
-      data[i + 2] = Math.max(0, Math.min(255, Math.round(bn * 255)));
+      data[i] = Math.max(0, Math.min(255, Math.round(outR * 255)));
+      data[i + 1] = Math.max(0, Math.min(255, Math.round(outG * 255)));
+      data[i + 2] = Math.max(0, Math.min(255, Math.round(outB * 255)));
     }
 
     ctx.putImageData(imageData, 0, 0);

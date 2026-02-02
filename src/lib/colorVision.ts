@@ -86,8 +86,10 @@ export function calculateColorVision(month: number): ColorVisionDetail {
 
   // Saturation sensitivity: slow development, doesn't reach adult levels until adolescence
   // Research: "Saturation thresholds do not reach adult levels until late adolescence"
-  // At 48 months, maybe ~60% of adult level
-  const saturationSensitivity = lerp(m, 0, 48, 0.1, 0.6);
+  // NOTE: This affects VIVIDNESS, not color detection ability.
+  // Infants CAN perceive colors, just less saturated than adults.
+  // At 48 months, maybe ~70% of adult level; baseline ~35% (not grayscale)
+  const saturationSensitivity = lerp(m, 0, 48, 0.35, 0.70);
 
   // === Stage Description ===
   let stage: string;
@@ -136,6 +138,11 @@ export function calculateColorVision(month: number): ColorVisionDetail {
 /**
  * Apply color vision limitations to RGB values
  * This simulates how an infant might perceive colors
+ *
+ * Improved model based on research:
+ * - Cone absorption determines what wavelengths are detected
+ * - Opponent channels determine color discrimination ability
+ * - Saturation sensitivity affects vividness (not color detection)
  */
 export function applyColorVisionFilter(
   r: number,
@@ -148,34 +155,33 @@ export function applyColorVisionFilter(
   const gn = g / 255;
   const bn = b / 255;
 
-  // Simulate cone response
-  // L-cone primarily responds to red/yellow
-  // M-cone primarily responds to green/yellow
-  // S-cone primarily responds to blue
-  const lResponse = rn * colorVision.lCone;
-  const mResponse = gn * colorVision.mCone;
-  const sResponse = bn * colorVision.sCone;
+  // Step 1: Cone absorption - what wavelengths are detected
+  const lAbsorbed = rn * colorVision.lCone;
+  const mAbsorbed = gn * colorVision.mCone;
+  const sAbsorbed = bn * colorVision.sCone;
 
-  // Combine based on opponent channels
-  // Without full red-green channel, colors blend more toward yellow/gray
-  // Without full blue-yellow channel, blues appear more gray
-  const rgBlend = colorVision.redGreenChannel;
-  const byBlend = colorVision.blueYellowChannel;
+  // Step 2: Opponent channel processing
+  // Determines how well colors can be discriminated
+  const achromatic = (lAbsorbed + mAbsorbed + sAbsorbed) / 3;
 
-  // Calculate output colors
-  // When channels are weak, colors shift toward luminance (gray)
-  const luminance = 0.299 * rn + 0.587 * gn + 0.114 * bn;
+  // Red-green discrimination
+  const lProcessed = achromatic + (lAbsorbed - achromatic) * colorVision.redGreenChannel;
+  const mProcessed = achromatic + (mAbsorbed - achromatic) * colorVision.redGreenChannel;
 
-  let outR = luminance + (lResponse - luminance) * rgBlend;
-  let outG = luminance + (mResponse - luminance) * rgBlend;
-  let outB = luminance + (sResponse - luminance) * byBlend;
+  // Blue-yellow discrimination
+  const sProcessed = achromatic + (sAbsorbed - achromatic) * colorVision.blueYellowChannel;
 
-  // Apply saturation sensitivity (reduce saturation for underdeveloped vision)
-  const avgOut = (outR + outG + outB) / 3;
+  // Step 3: Output
+  let outR = lProcessed;
+  let outG = mProcessed;
+  let outB = sProcessed;
+
+  // Step 4: Saturation sensitivity (affects vividness, not hue detection)
+  const avgProcessed = (outR + outG + outB) / 3;
   const satFactor = colorVision.saturationSensitivity;
-  outR = avgOut + (outR - avgOut) * satFactor;
-  outG = avgOut + (outG - avgOut) * satFactor;
-  outB = avgOut + (outB - avgOut) * satFactor;
+  outR = avgProcessed + (outR - avgProcessed) * satFactor;
+  outG = avgProcessed + (outG - avgProcessed) * satFactor;
+  outB = avgProcessed + (outB - avgProcessed) * satFactor;
 
   // Convert back to 0-255
   return {

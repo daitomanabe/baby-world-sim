@@ -7,6 +7,7 @@ import AudioSimPanel from "./features/simulation/AudioSimPanel";
 import NonReproducibleSensesPanel from "./features/simulation/NonReproducibleSensesPanel";
 import LanguageConceptPanel from "./features/simulation/LanguageConceptPanel";
 import { Disclaimer } from "./components/Evidence";
+import { SourcesPanel } from "./components/Sources";
 import { MODEL_META } from "./data";
 
 export default function App() {
@@ -55,6 +56,11 @@ export default function App() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Sources section at the bottom */}
+      <div style={{ marginTop: 24 }}>
+        <SourcesPanel />
       </div>
     </div>
   );

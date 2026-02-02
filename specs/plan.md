@@ -86,7 +86,7 @@ Integrate the v0.3 detailed model (baby_world_monthly_model.v0.3.detailed.json) 
 
 ## Phase 3: Audio Simulation (MVP)
 
-### [ ] Task 3.1: WebAudio synthesis with noise
+### [x] Task 3.1: WebAudio synthesis with noise
 **File**: `src/features/simulation/AudioSimPanel.tsx`
 **Module**: `audio.webAudio`
 **Description**: Implement audio playback using renderParams.audio
@@ -109,7 +109,7 @@ Integrate the v0.3 detailed model (baby_world_monthly_model.v0.3.detailed.json) 
 - Visual design: small badge/chip
 **Priority**: 1 (Critical - ethical requirement)
 
-### [ ] Task 4.2: Integrate evidence badges into visual panel
+### [x] Task 4.2: Integrate evidence badges into visual panel
 **File**: `src/features/simulation/VisualSimCanvas.tsx`
 **Module**: `evidence.ui`
 **Description**: Add evidence badges to visual simulation display
@@ -119,7 +119,7 @@ Integrate the v0.3 detailed model (baby_world_monthly_model.v0.3.detailed.json) 
 **Priority**: 1 (Critical)
 **Depends on**: Task 4.1
 
-### [ ] Task 4.3: Integrate evidence badges into audio panel
+### [x] Task 4.3: Integrate evidence badges into audio panel
 **File**: `src/features/simulation/AudioSimPanel.tsx`
 **Module**: `evidence.ui`
 **Description**: Add evidence badges to audio simulation display

@@ -149,6 +149,41 @@ export interface VisionSense {
   isInterpolated: boolean;
 }
 
+/**
+ * Detailed color vision development model based on research:
+ * - PMC9314692 (Skelton 2022): Infant color perception timeline
+ * - AAO: Vision development first year
+ *
+ * Key findings:
+ * - Red-green channel develops first (by 2 months)
+ * - Blue-yellow channel follows 4-8 weeks later (by 3-4 months)
+ * - Trichromatic vision by 3 months
+ * - Color categorization by 4-6 months
+ * - Color constancy develops 3+ months, matures through 4 years
+ */
+export interface ColorVisionDetail {
+  /** L-cone (red) sensitivity: 0-1 */
+  lCone: number;
+  /** M-cone (green) sensitivity: 0-1 */
+  mCone: number;
+  /** S-cone (blue) sensitivity: 0-1 */
+  sCone: number;
+  /** Red-green opponent channel: 0-1 (develops first) */
+  redGreenChannel: number;
+  /** Blue-yellow opponent channel: 0-1 (develops 4-8 weeks after R-G) */
+  blueYellowChannel: number;
+  /** Color categorization ability: 0-1 (5 categories by 4-6 months) */
+  colorCategorization: number;
+  /** Color constancy: 0-1 (begins 3 months, matures through 4 years) */
+  colorConstancy: number;
+  /** Saturation sensitivity: 0-1 (doesn't reach adult levels until adolescence) */
+  saturationSensitivity: number;
+  /** Development stage description */
+  stage: string;
+  /** Evidence source reference */
+  evidenceRef: string;
+}
+
 export interface HearingSense {
   localizationErrorDeg: number;
   speechSalience: number;

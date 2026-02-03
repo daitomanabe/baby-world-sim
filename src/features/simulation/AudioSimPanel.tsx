@@ -1,11 +1,20 @@
 import React, { useMemo, useRef, useState, useCallback } from "react";
-import { getMonthDataInterpolated, isMonthInterpolated } from "../../lib/interp";
+import { getGrowthDataInterpolated } from "../../data";
 import { EvidenceBadge } from "../../components/Evidence";
 
 type Props = {
   /** Current week (0-208) */
   week: number;
 };
+
+// Helper to format month for display
+function formatMonth(m: number): string {
+  if (m < 1) return `${Math.round(m * 4.345)}週`;
+  if (m < 12) return `${m.toFixed(1)}ヶ月`;
+  const years = Math.floor(m / 12);
+  const months = Math.round(m % 12);
+  return months > 0 ? `${years}歳${months}ヶ月` : `${years}歳`;
+}
 
 function ensureAudioContext(): AudioContext {
   const AnyWindow = window as any;
@@ -21,17 +30,15 @@ export default function AudioSimPanel({ week }: Props) {
   // Convert week to month for v0.3 model
   const month = useMemo(() => week / 4.345, [week]);
 
-  // Get the render params for the current month
-  const monthData = useMemo(() => getMonthDataInterpolated(month), [month]);
-  const { audio } = monthData.renderParams;
-  const isInterpolated = useMemo(() => isMonthInterpolated(month), [month]);
+  // Get comprehensive growth data
+  const growthData = useMemo(() => getGrowthDataInterpolated(month), [month]);
+  const { hearing } = growthData;
+  const ageLabel = formatMonth(month);
 
-  // Get hearing data for stage info
-  const hearingStage = monthData.senses.hearing.stage;
-  const localizationErrorDeg = monthData.senses.hearing.localizationErrorDeg;
-
-  // Calculate SNR based on model
-  const snrDb = audio.speechInNoiseSuggestedSNRdB;
+  // Calculate audio parameters from hearing data
+  const snrDb = hearing.suggestedSNRdB;
+  const panningJitter = hearing.panningJitter;
+  const localizationErrorDeg = hearing.localizationErrorDeg;
 
   const play = useCallback(async () => {
     if (!ctxRef.current) ctxRef.current = ensureAudioContext();
@@ -64,8 +71,7 @@ export default function AudioSimPanel({ week }: Props) {
     });
 
     // Apply panning jitter based on localization error
-    const panJitter = audio.panningJitter;
-    speechPan.pan.value = (Math.random() * 2 - 1) * panJitter;
+    speechPan.pan.value = (Math.random() * 2 - 1) * panningJitter;
 
     speechGain.connect(speechPan);
     speechPan.connect(ctx.destination);
@@ -121,23 +127,49 @@ export default function AudioSimPanel({ week }: Props) {
 
     setIsPlaying(true);
     setTimeout(() => setIsPlaying(false), duration * 1000 + 100);
-  }, [audio, noiseLevel]);
+  }, [panningJitter, snrDb, noiseLevel]);
+
+  // Progress bar component
+  const ProgressBar = ({ value, label, color }: { value: number; label: string; color: string }) => (
+    <div style={{ marginBottom: 6 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+        <span style={{ fontSize: 11 }}>{label}</span>
+        <span style={{ fontSize: 11 }}>{(value * 100).toFixed(0)}%</span>
+      </div>
+      <div style={{ height: 6, backgroundColor: "#e5e7eb", borderRadius: 3, overflow: "hidden" }}>
+        <div
+          style={{
+            width: `${value * 100}%`,
+            height: "100%",
+            backgroundColor: color,
+            borderRadius: 3,
+            transition: "width 0.3s ease",
+          }}
+        />
+      </div>
+    </div>
+  );
 
   return (
     <div className="card">
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline", flexWrap: "wrap" }}>
-        <div style={{ fontSize: 14, fontWeight: 700 }}>聴覚シミュレーション（近似）</div>
+        <div style={{ fontSize: 14, fontWeight: 700 }}>聴覚シミュレーション</div>
         <EvidenceBadge
           evidenceLevel="hospital_handout"
           sourceUrl="https://www.stanfordchildrens.org/en/topic/default?id=age-appropriate-hearing-speech-and-language-milestones-90-P02169"
-          sourceTitle="Stanford Medicine: Hearing/Speech Milestones"
-          isInterpolated={isInterpolated}
+          sourceTitle="Stanford Medicine: Hearing Milestones"
           compact
         />
       </div>
 
       <div className="small" style={{ marginTop: 4, color: "#666" }}>
-        {monthData.ageLabel} - {hearingStage}
+        {ageLabel} - {hearing.stage}
+      </div>
+
+      {/* Hearing development metrics */}
+      <div style={{ marginTop: 12 }}>
+        <ProgressBar value={hearing.speechSalience} label="音声への注意" color="#3b82f6" />
+        <ProgressBar value={1 - hearing.panningJitter} label="音源定位精度" color="#10b981" />
       </div>
 
       <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
@@ -175,7 +207,7 @@ export default function AudioSimPanel({ week }: Props) {
 
       <div style={{ marginTop: 12, fontSize: 11, color: "#888", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8 }}>
         <div>定位誤差: {Math.round(localizationErrorDeg)}°</div>
-        <div>パンニングジッター: {audio.panningJitter.toFixed(2)}</div>
+        <div>パンニングジッター: {panningJitter.toFixed(2)}</div>
         <div>推奨SNR: {snrDb.toFixed(1)}dB</div>
       </div>
 

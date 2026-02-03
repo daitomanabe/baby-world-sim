@@ -6,6 +6,8 @@ import ColorVisionPanel from "./features/simulation/ColorVisionPanel";
 import AudioSimPanel from "./features/simulation/AudioSimPanel";
 import NonReproducibleSensesPanel from "./features/simulation/NonReproducibleSensesPanel";
 import LanguageConceptPanel from "./features/simulation/LanguageConceptPanel";
+import NumeracyPanel from "./features/simulation/NumeracyPanel";
+import LiteracyPanel from "./features/simulation/LiteracyPanel";
 import { Disclaimer } from "./components/Evidence";
 import { SourcesPanel } from "./components/Sources";
 import { MODEL_META } from "./data";
@@ -24,7 +26,7 @@ export default function App() {
         0〜4歳（0〜48ヶ月 / 0〜208週）を週単位で可視化する近似シミュレーター（教育・研究用途）
       </div>
       <div className="small" style={{ marginTop: 4, color: "#666" }}>
-        Model v{MODEL_META?.modelVersion || "0.3"} | {MODEL_META?.granularity || "month"}
+        Model v{MODEL_META?.modelVersion || "0.3"} | {MODEL_META?.granularity || "month"} | 10領域統合
       </div>
 
       <Disclaimer
@@ -46,13 +48,15 @@ export default function App() {
         <div style={{ display: "grid", gap: 16 }}>
           <NonReproducibleSensesPanel week={week} />
           <LanguageConceptPanel week={week} />
+          <NumeracyPanel week={week} />
+          <LiteracyPanel week={week} />
           <div className="card">
             <div style={{ fontSize: 14, fontWeight: 700 }}>状態</div>
             <div className="small" style={{ marginTop: 8 }}>
               week={week} / month≈{monthDisplay}
             </div>
             <div className="small" style={{ marginTop: 8, opacity: 0.85 }}>
-              TODO: 運動（粗大/微細）パネル、聴覚シミュレーション、出典カードの共通UI、個人差レンジなど。
+              統合済み: 視覚、聴覚、触覚、味覚、嗅覚、認知、言語、会話、数概念、リテラシー
             </div>
           </div>
         </div>

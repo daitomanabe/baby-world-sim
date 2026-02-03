@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react';
-import { SOURCES } from '../../data';
+import { SOURCES, GROWTH_SOURCES } from '../../data';
 import { COLOR_VISION_SOURCES } from '../../lib/colorVision';
 import { DEPTH_VISION_SOURCES } from '../../lib/depthVision';
 import type { EvidenceLevel } from '../../types';
@@ -21,6 +21,18 @@ const EVIDENCE_STYLES: Record<EvidenceLevel, { label: string; color: string; bg:
   placeholder: { label: '仮値', color: '#6b7280', bg: '#f3f4f6' },
 };
 
+// Domain labels
+const DOMAIN_LABELS: Record<string, string> = {
+  vision: '視覚',
+  hearing: '聴覚',
+  touch: '触覚',
+  taste: '味覚',
+  smell: '嗅覚',
+  cognition: '認知',
+  numeracy: '数概念',
+  literacy: 'リテラシー',
+};
+
 // Organize all sources by category
 interface SourceItem {
   key: string;
@@ -32,22 +44,26 @@ interface SourceItem {
 
 function getAllSources(): SourceItem[] {
   const sources: SourceItem[] = [];
+  const seenUrls = new Set<string>();
 
   // From v0.3 model SOURCES
   Object.entries(SOURCES).forEach(([key, src]) => {
-    sources.push({
-      key,
-      title: src.title,
-      url: src.url,
-      evidenceLevel: src.evidenceLevel,
-      category: 'モデルデータ',
-    });
+    if (!seenUrls.has(src.url)) {
+      seenUrls.add(src.url);
+      sources.push({
+        key,
+        title: src.title,
+        url: src.url,
+        evidenceLevel: src.evidenceLevel,
+        category: 'モデルデータ',
+      });
+    }
   });
 
   // From color vision
   Object.entries(COLOR_VISION_SOURCES).forEach(([key, src]) => {
-    // Avoid duplicates
-    if (!sources.find((s) => s.url === src.url)) {
+    if (!seenUrls.has(src.url)) {
+      seenUrls.add(src.url);
       sources.push({
         key: `color_${key}`,
         title: src.title,
@@ -60,14 +76,29 @@ function getAllSources(): SourceItem[] {
 
   // From depth vision
   Object.entries(DEPTH_VISION_SOURCES).forEach(([key, src]) => {
-    // Avoid duplicates
-    if (!sources.find((s) => s.url === src.url)) {
+    if (!seenUrls.has(src.url)) {
+      seenUrls.add(src.url);
       sources.push({
         key: `depth_${key}`,
         title: src.title,
         url: src.url,
         evidenceLevel: src.evidenceLevel,
         category: '奥行き知覚',
+      });
+    }
+  });
+
+  // From GROWTH_SOURCES (comprehensive documentation)
+  Object.entries(GROWTH_SOURCES).forEach(([key, src]) => {
+    if (!seenUrls.has(src.url)) {
+      seenUrls.add(src.url);
+      const domainLabel = DOMAIN_LABELS[src.domain] || src.domain;
+      sources.push({
+        key: `growth_${key}`,
+        title: src.title,
+        url: src.url,
+        evidenceLevel: 'peer_reviewed', // Most are research-based
+        category: domainLabel,
       });
     }
   });
@@ -110,7 +141,7 @@ type Props = {
 
 export default function SourcesPanel({ defaultExpanded = false }: Props) {
   const [expanded, setExpanded] = useState(defaultExpanded);
-  const [groupBy, setGroupBy] = useState<'category' | 'evidence'>('evidence');
+  const [groupBy, setGroupBy] = useState<'category' | 'evidence'>('category');
 
   const allSources = getAllSources();
   const groupedByCategory = groupByCategory(allSources);
@@ -122,6 +153,21 @@ export default function SourcesPanel({ defaultExpanded = false }: Props) {
     count: items.length,
     ...EVIDENCE_STYLES[level as EvidenceLevel],
   }));
+
+  // Category order for display
+  const categoryOrder = [
+    'モデルデータ',
+    '視覚',
+    '色覚発達',
+    '奥行き知覚',
+    '聴覚',
+    '触覚',
+    '味覚',
+    '嗅覚',
+    '認知',
+    '数概念',
+    'リテラシー',
+  ];
 
   return (
     <div className="card">
@@ -179,18 +225,71 @@ export default function SourcesPanel({ defaultExpanded = false }: Props) {
               onChange={(e) => setGroupBy(e.target.value as 'category' | 'evidence')}
               style={{ fontSize: 10, padding: '2px 4px' }}
             >
-              <option value="evidence">エビデンスレベル別</option>
               <option value="category">カテゴリ別</option>
+              <option value="evidence">エビデンスレベル別</option>
             </select>
           </div>
 
           {/* Sources list */}
-          {groupBy === 'evidence' ? (
+          {groupBy === 'category' ? (
+            // Group by category (ordered)
+            categoryOrder
+              .filter(cat => groupedByCategory[cat]?.length > 0)
+              .concat(
+                Object.keys(groupedByCategory).filter(cat => !categoryOrder.includes(cat))
+              )
+              .map((category) => {
+                const items = groupedByCategory[category];
+                if (!items?.length) return null;
+                return (
+                  <div key={category} style={{ marginTop: 12 }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        padding: '4px 8px',
+                        borderRadius: 4,
+                        backgroundColor: '#f3f4f6',
+                        marginBottom: 6,
+                      }}
+                    >
+                      {category} ({items.length})
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: 16 }}>
+                      {items.map((src) => (
+                        <li key={src.key} style={{ fontSize: 10, marginBottom: 4, lineHeight: 1.4 }}>
+                          <a
+                            href={src.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#2563eb', textDecoration: 'none' }}
+                          >
+                            {src.title}
+                          </a>
+                          <span
+                            style={{
+                              fontSize: 8,
+                              marginLeft: 6,
+                              padding: '1px 4px',
+                              borderRadius: 3,
+                              backgroundColor: EVIDENCE_STYLES[src.evidenceLevel]?.bg || '#f3f4f6',
+                              color: EVIDENCE_STYLES[src.evidenceLevel]?.color || '#333',
+                            }}
+                          >
+                            {EVIDENCE_STYLES[src.evidenceLevel]?.label || src.evidenceLevel}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })
+          ) : (
             // Group by evidence level
             Object.entries(groupedByEvidence)
               .sort(([a], [b]) => {
-                const order = ['peer_reviewed', 'metaanalysis', 'public_guideline', 'expert_consensus', 'expert_article', 'interpolated'];
-                return order.indexOf(a) - order.indexOf(b);
+                const order: EvidenceLevel[] = ['peer_reviewed', 'public_guideline', 'hospital_handout', 'expert_article', 'book', 'placeholder'];
+                return order.indexOf(a as EvidenceLevel) - order.indexOf(b as EvidenceLevel);
               })
               .map(([level, items]) => (
                 <div key={level} style={{ marginTop: 12 }}>
@@ -226,50 +325,6 @@ export default function SourcesPanel({ defaultExpanded = false }: Props) {
                   </ul>
                 </div>
               ))
-          ) : (
-            // Group by category
-            Object.entries(groupedByCategory).map(([category, items]) => (
-              <div key={category} style={{ marginTop: 12 }}>
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    padding: '4px 8px',
-                    borderRadius: 4,
-                    backgroundColor: '#f3f4f6',
-                    marginBottom: 6,
-                  }}
-                >
-                  {category} ({items.length})
-                </div>
-                <ul style={{ margin: 0, paddingLeft: 16 }}>
-                  {items.map((src) => (
-                    <li key={src.key} style={{ fontSize: 10, marginBottom: 4, lineHeight: 1.4 }}>
-                      <a
-                        href={src.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ color: '#2563eb', textDecoration: 'none' }}
-                      >
-                        {src.title}
-                      </a>
-                      <span
-                        style={{
-                          fontSize: 8,
-                          marginLeft: 6,
-                          padding: '1px 4px',
-                          borderRadius: 3,
-                          backgroundColor: EVIDENCE_STYLES[src.evidenceLevel]?.bg || '#f3f4f6',
-                          color: EVIDENCE_STYLES[src.evidenceLevel]?.color || '#333',
-                        }}
-                      >
-                        {EVIDENCE_STYLES[src.evidenceLevel]?.label || src.evidenceLevel}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))
           )}
 
           {/* Disclaimer */}

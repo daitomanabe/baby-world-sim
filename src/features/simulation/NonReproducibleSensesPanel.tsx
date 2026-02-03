@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { getMonthDataInterpolated, isMonthInterpolated } from "../../lib/interp";
+import { getGrowthDataInterpolated } from "../../data";
 import { EvidenceBadge } from "../../components/Evidence";
 
 type Props = {
@@ -7,13 +7,24 @@ type Props = {
   week: number;
 };
 
+// Helper to format month for display
+function formatMonth(m: number): string {
+  if (m < 1) return `${Math.round(m * 4.345)}週`;
+  if (m < 12) return `${m.toFixed(1)}ヶ月`;
+  const years = Math.floor(m / 12);
+  const months = Math.round(m % 12);
+  return months > 0 ? `${years}歳${months}ヶ月` : `${years}歳`;
+}
+
 export default function NonReproducibleSensesPanel({ week }: Props) {
   // Convert week to month for v0.3 model
   const month = useMemo(() => week / 4.345, [week]);
-  const monthData = useMemo(() => getMonthDataInterpolated(month), [month]);
-  const isInterpolated = useMemo(() => isMonthInterpolated(month), [month]);
 
-  const { touch, smell, taste } = monthData.senses;
+  // Get comprehensive growth data
+  const growthData = useMemo(() => getGrowthDataInterpolated(month), [month]);
+
+  const { touch, taste, smell } = growthData;
+  const ageLabel = formatMonth(month);
 
   // Progress bar component
   const ProgressBar = ({ value, label, color }: { value: number; label: string; color: string }) => (
@@ -41,15 +52,15 @@ export default function NonReproducibleSensesPanel({ week }: Props) {
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline", flexWrap: "wrap" }}>
         <div style={{ fontSize: 14, fontWeight: 700 }}>触覚・嗅覚・味覚</div>
         <EvidenceBadge
-          evidenceLevel="placeholder"
-          sourceTitle="モデル仮定（proxy）"
-          isInterpolated={isInterpolated}
+          evidenceLevel="public_guideline"
+          sourceUrl="https://www.cdc.gov/act-early/milestones/4-months.html"
+          sourceTitle="CDC Milestones + Research"
           compact
         />
       </div>
 
       <div className="small" style={{ marginTop: 4, color: "#666" }}>
-        {monthData.ageLabel} - これらの感覚はPCで直接再現できないため、発達の傾向を数値で表示
+        {ageLabel} - これらの感覚はPCで直接再現できないため、発達の傾向を数値で表示
       </div>
 
       {/* Touch */}
@@ -65,9 +76,12 @@ export default function NonReproducibleSensesPanel({ week }: Props) {
       {/* Smell */}
       <div style={{ marginTop: 16 }}>
         <div className="small" style={{ fontWeight: 600, marginBottom: 8 }}>
-          嗅覚 - {smell.stage}
+          嗅覚 - 匂いの識別
         </div>
-        <ProgressBar value={smell.discrimination} label="匂いの識別" color="#8b5cf6" />
+        <ProgressBar value={smell.discrimination} label="識別能力" color="#8b5cf6" />
+        <div className="small" style={{ color: "#666", marginTop: 4 }}>
+          {month < 3 ? "母親の匂いを識別" : month < 12 ? "離乳期：食品の匂いを経験" : "匂いと記憶の結びつき発達"}
+        </div>
       </div>
 
       {/* Taste */}

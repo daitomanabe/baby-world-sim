@@ -4,6 +4,24 @@ import milestones from "./milestones.sample.json";
 import curves from "./curves.sample.json";
 import modelDataV3 from "./baby_world_monthly_model.v0.3.detailed.json";
 
+// Re-export comprehensive growth data (from documentation)
+export {
+  getGrowthData,
+  getGrowthDataInterpolated,
+  GROWTH_SOURCES,
+  type MonthlyGrowthData,
+  type VisionData,
+  type HearingData,
+  type TouchData,
+  type TasteData,
+  type SmellData,
+  type CognitionData,
+  type LanguageData,
+  type ConversationData,
+  type NumeracyData,
+  type LiteracyData,
+} from "./growthData";
+
 // ============================================================================
 // v0.3 Model Data
 // ============================================================================
